@@ -11,23 +11,13 @@
 #define pulseHigh(pin) {digitalWrite(pin, HIGH); digitalWrite(pin, LOW); }
 #define TX_PIN 3
 #define LED_PIN 13
-#define ANALOG_VOLTAGE_PIN 1
-
-int_fast32_t rx=7025000; // Starting frequency of VFO
-int_fast32_t rx2=1; // variable to hold the updated frequency
-int_fast32_t increment = 10000; // starting VFO update increment in HZ.
-int buttonstate = 0;
-int buttonstate1 = 0;
-int buttonstate2 = 0;
-String hertz = "10 KHz";
-int  hertzPosition = 5;
-byte ones,tens,hundreds,thousands,tenthousands,hundredthousands,millions ;  //Placeholders
-String freq; // string to hold the frequency
-int_fast32_t timepassed = millis(); // int to hold the arduino miilis since startup
 
 float ltx = 0;    // Saved x coord of bottom of needle
 uint16_t osx = 120, osy = 120; // Saved x & y coords
 uint32_t updateTime = 0;       // time for next update
+int_fast32_t rx=7025000; // Starting frequency of VFO
+int_fast32_t rx2=1; // variable to hold the updated frequency
+int_fast32_t increment = 10000; // starting VFO update increment in HZ
 
 const char *splash =
 " _  __   _____   ____    ______  __    __   _____ \r\n"
@@ -44,14 +34,15 @@ int old_digital = -999; // Value last displayed
 int VSWR = 0;
 int REV = 0;
 int FWD = 0;
-float volts = 0;
 
 void setup()
 {
     TFT_BL_ON;                                      // turn on the background light
     Tft.TFTinit();                                  // init TFT library
+    Serial.begin(9600);
+    Serial.print(splash);
     analogMeter(); // Draw analogue meter
-    //digitalMeter(); // Draw digital meter
+    digitalMeter(); // Draw digital meter
     updateTime = millis(); // Next update time
 }
 
@@ -83,6 +74,7 @@ void loop()
       VSWR = (FWD+REV)/(FWD-REV);
     }
     plotNeedle(VSWR, 8); // Update analogue meter, 8ms delay per needle increment    
+    showDigital(map(VSWR,0,100,0,5),8);
   }
 }
 
@@ -237,7 +229,7 @@ void digitalMeter()
   
   Tft.fillRectangle(xpos - 52, ypos - 5, 2 * 54, 59, GRAY1);
   Tft.fillRectangle(xpos - 49, ypos - 2, 2 * 51, 53, BLACK);
-  Tft.drawString("888", xpos - 48, ypos+1, 7, BLACK);
+  Tft.drawString("888", xpos - 48, ypos+1, 5, BLACK);
 }
 
 // #########################################################################
@@ -256,10 +248,10 @@ void showDigital(float value, byte ms_delay)
   if (ms_delay == 0) old_digital = value; // Update immediately if delay is 0
   
   // Update with new value
-  if (value < 10) Tft.drawFloat(value, xpos-54, ypos, 7, RED);
-  else if (value < 100) Tft.drawFloat(value, xpos - 14, ypos, 7, RED);
-  //else Tft.drawNumber((long int) numToAscii(value), xpos - 47, ypos, 7, RED);
-  else Tft.drawFloat(value, xpos-14, ypos, 7, RED);
+  if (value < 10) Tft.drawFloat(value, xpos-54, ypos, 5, RED);
+  else if (value < 100) Tft.drawFloat(value, xpos - 14, ypos, 5, RED);
+  //else Tft.drawNumber((long int) numToAscii(value), xpos - 47, ypos, 5, RED);
+  else Tft.drawFloat(value, xpos-14, ypos, 5, RED);
   old_digital = value;
   
     // Slow display down slightly as it approaches new postion
